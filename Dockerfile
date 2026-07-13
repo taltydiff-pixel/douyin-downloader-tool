@@ -1,28 +1,43 @@
 FROM python:3.13-slim
 
-# 安装 ffmpeg（PyAV 依赖）
+# ===== 安装系统依赖 =====
+# ffmpeg: 运行时音频处理
+# ffmpeg-dev 系列: PyAV 编译时需要
+# libsndfile1: faster-whisper 依赖
+# curl: 健康检查
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    libavformat-dev \
+    libavcodec-dev \
+    libavdevice-dev \
+    libavutil-dev \
+    libavfilter-dev \
+    libswscale-dev \
+    libswresample-dev \
+    libsndfile1 \
+    libsndfile1-dev \
+    pkg-config \
+    gcc \
+    g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# 先装依赖（利用 Docker 缓存）
+# ===== 安装 Python 依赖 =====
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 预下载 Whisper tiny 模型
-ENV HF_HUB_DISABLE_SYMLINKS_WARNING=1
-RUN python -c "from faster_whisper import WhisperModel; model = WhisperModel('tiny', device='cpu', compute_type='int8', download_root='/app/models'); print('Whisper tiny model downloaded successfully')"
-
-# 复制应用代码
+# ===== 复制应用代码 =====
 COPY app.py .
 COPY templates/ templates/
+COPY static/ static/
+COPY entrypoint.sh .
 
-# 创建运行时目录
-RUN mkdir -p downloads temp
+# ===== 初始化 =====
+RUN mkdir -p downloads temp models && chmod +x entrypoint.sh
 
-# Railway 通过 PORT 环境变量指定端口
 EXPOSE 8000
 
-CMD ["sh", "-c", "python -c \"from waitress import serve; from app import app; import os; port = int(os.environ.get('PORT', 8000)); print(f'Starting on port {port}'); serve(app, host='0.0.0.0', port=port)\""]
+# 入口脚本：首次启动时下载 Whisper 模型，然后启动服务
+ENTRYPOINT ["./entrypoint.sh"]
