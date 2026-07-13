@@ -18,7 +18,6 @@ RUN python -c "from faster_whisper import WhisperModel; model = WhisperModel('ti
 # 复制应用代码
 COPY app.py .
 COPY templates/ templates/
-COPY static/ static/
 
 # 创建运行时目录
 RUN mkdir -p downloads temp
