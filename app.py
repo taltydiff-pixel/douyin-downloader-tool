@@ -36,14 +36,11 @@ if os.name == "nt":  # Windows 本地开发
     if os.path.exists(_local_ffmpeg):
         FFMPEG_PATH = _local_ffmpeg
 
-# Whisper 模型路径（Docker 构建时预下载到 /app/models，本地使用缓存）
+# Whisper 模型路径
+# Docker 环境：模型预下载到 /app/models，用 'tiny' 自动匹配缓存
+# 本地开发：使用本地下载的模型目录
 _cloud_model = os.path.join(BASE_DIR, "models")
-if os.path.exists(_cloud_model):
-    WHISPER_MODEL_PATH = _cloud_model
-else:
-    WHISPER_MODEL_PATH = os.path.expanduser(
-        "~/.cache/huggingface/hub/models--Systran--faster-whisper-tiny/snapshots/abc123/"
-    )
+WHISPER_MODEL_PATH = "tiny"  # faster-whisper 会自动在默认缓存目录查找
 
 # DeepSeek API 配置（两个Key备用）
 DEEPSEEK_CONFIGS = [
@@ -578,7 +575,7 @@ if __name__ == "__main__":
     print("  抖音爆款视频下载工具 v2.0")
     print("=" * 60)
     print(f"  DeepSeek AI: {'已配置' if DEEPSEEK_CONFIGS[0]['key'] else '未配置'}")
-    print(f"  Whisper 模型: {'就绪' if os.path.exists(WHISPER_MODEL_PATH) else '未找到'}")
+    print(f"  Whisper 模型: 'tiny' (按需加载)")
     print(f"  ffmpeg: {'就绪' if os.path.exists(FFMPEG_PATH) else '未找到'}")
     print()
     print("  新功能:")
