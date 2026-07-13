@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+downloads/
+temp/
+whisper_env/
+*.bat
+start_tunnel.js
+.env

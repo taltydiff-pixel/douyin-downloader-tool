@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音爆款视频创作工具 v2.0</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap');
+
+        :root {
+            /* 高端商务配色 */
+            --bg-deep: #060810;
+            --bg-primary: #0a0e1a;
+            --bg-card: rgba(16, 22, 38, 0.6);
+            --bg-card-solid: #101626;
+            --bg-input: rgba(8, 12, 24, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-bright: rgba(255, 255, 255, 0.12);
+            --border-gold: rgba(212, 175, 55, 0.25);
+            --text-primary: #e8ecf4;
+            --text-secondary: #8892a6;
+            --text-muted: #4a5468;
+            /* 金色系 */
+            --gold: #d4af37;
+            --gold-light: #f0c75e;
+            --gold-gradient: linear-gradient(135deg, #d4af37, #f0c75e, #d4af37);
+            /* 蓝色系 */
+            --blue: #3b82f6;
+            --blue-light: #60a5fa;
+            --cyan: #06b6d4;
+            /* 红色系（保留抖音基因） */
+            --accent: #fe2c55;
+            --accent-dim: rgba(254, 44, 85, 0.15);
+            /* 功能色 */
+            --green: #10b981;
+            --green-bg: rgba(16, 185, 129, 0.1);
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --purple-bg: rgba(139, 92, 246, 0.1);
+            --orange: #f59e0b;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --font: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            --mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景网格+光效 */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212, 175, 55, 0.08), transparent),
+                radial-gradient(ellipse 60% 50% at 80% 100%, rgba(59, 130, 246, 0.06), transparent),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(254, 44, 85, 0.04), transparent);
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .container { max-width: 860px; margin: 0 auto; padding: 48px 20px 60px; position: relative; z-index: 1; }
+
+        /* ============ Header ============ */
+        .header { text-align: center; margin-bottom: 40px; }
+        .header .logo-wrap {
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 20px; position: relative;
+        }
+        .header .logo {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #0a0e1a, #1a2238);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px;
+            box-shadow:
+                0 0 40px rgba(212, 175, 55, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+        }
+        .header .logo::after {
+            content: '';
+            position: absolute; inset: -1px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.3), transparent, rgba(59,130,246,0.2));
+            z-index: -1;
+            filter: blur(8px);
+        }
+        .header h1 {
+            font-size: 32px; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 30%, #d4af37 70%, #f0c75e);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.3;
+        }
+        .header p {
+            color: var(--text-secondary); font-size: 14px;
+            margin-top: 6px; letter-spacing: 2px; font-weight: 300;
+        }
+        .header .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 14px; border-radius: 30px;
+            font-size: 11px; font-weight: 500; letter-spacing: 1px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(59,130,246,0.08));
+            border: 1px solid var(--border-gold);
+            color: var(--gold-light); margin-top: 12px;
+        }
+        .header .badge .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--gold); box-shadow: 0 0 8px var(--gold);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* ============ Cards ============ */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px; margin-bottom: 16px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+        }
+        .card:hover {
+            border-color: var(--border-bright);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+            transform: translateY(-1px);
+        }
+        .card-title {
+            font-size: 14px; font-weight: 600; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 10px;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .card-title .icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0;
+        }
+        .card-title .icon.gold { background: rgba(212,175,55,0.1); border: 1px solid var(--border-gold); }
+        .card-title .icon.blue { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); }
+        .card-title .icon.green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); }
+        .card-title .icon.purple { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); }
+        .card-title .icon.orange { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
+        .card-title .label {
+            background: linear-gradient(135deg, #fff, var(--text-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============ Input ============ */
+        .input-group { display: flex; gap: 10px; }
+        .input-group input {
+            flex: 1; padding: 14px 18px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px; font-family: var(--font);
+            transition: all 0.25s; outline: none;
+        }
+        .input-group input::placeholder { color: var(--text-muted); }
+        .input-group input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.08), 0 0 20px rgba(212,175,55,0.05);
+            background: rgba(8,12,24,0.95);
+        }
+
+        /* ============ Buttons ============ */
+        .btn {
+            padding: 13px 26px; border: none; border-radius: var(--radius-sm);
+            font-size: 14px; font-weight: 600; font-family: var(--font);
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap; position: relative; overflow: hidden;
+            letter-spacing: 0.3px;
+        }
+        .btn::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .btn:hover::after { opacity: 1; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37, #b8941e);
+            color: #0a0e1a;
+            box-shadow: 0 4px 20px rgba(212,175,55,0.2);
+            font-weight: 700;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 30px rgba(212,175,55,0.35);
+        }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-primary);
+            border: 1px solid var(--border-bright);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.2);
+        }
+        .btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(16,185,129,0.35); }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(139,92,246,0.2);
+        }
+        .btn-purple:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(139,92,246,0.35); }
+
+        .btn-orange {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #0a0e1a;
+            box-shadow: 0 4px 20px rgba(245,158,11,0.2);
+            font-weight: 700;
+        }
+        .btn-orange:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(245,158,11,0.35); }
+
+        .btn-sm { padding: 9px 16px; font-size: 13px; }
+
+        /* ============ Format Selector ============ */
+        .format-selector { display: flex; gap: 8px; margin-top: 14px; }
+        .format-option {
+            flex: 1; padding: 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            text-align: center; cursor: pointer;
+            transition: all 0.25s; user-select: none;
+            position: relative;
+        }
+        .format-option:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.05); }
+        .format-option.active {
+            border-color: var(--gold);
+            background: rgba(212,175,55,0.06);
+            box-shadow: inset 0 0 20px rgba(212,175,55,0.04);
+        }
+        .format-option .fmt-name {
+            font-size: 15px; font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--mono); letter-spacing: 1px;
+        }
+        .format-option.active .fmt-name { color: var(--gold-light); }
+        .format-option .fmt-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        /* ============ Status ============ */
+        .status-box {
+            display: none; margin-top: 14px; padding: 14px 18px;
+            border-radius: var(--radius-sm); font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+        .status-box.show { display: block; }
+        .status-box.loading {
+            background: rgba(59,130,246,0.06);
+            border: 1px solid rgba(59,130,246,0.15);
+            color: var(--blue-light);
+        }
+        .status-box.success {
+            background: var(--green-bg);
+            border: 1px solid rgba(16,185,129,0.15);
+            color: var(--green);
+        }
+        .status-box.error {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.15);
+            color: var(--red);
+        }
+
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(59,130,246,0.15); border-top-color: var(--blue-light);
+            border-radius: 50%; animation: spin 0.6s linear infinite;
+            vertical-align: middle; margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============ Result Preview ============ */
+        .result-preview {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px; margin-bottom: 14px;
+        }
+        .result-preview .row {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; font-size: 13px;
+        }
+        .result-preview .row:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .result-preview .label {
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; font-size: 11px;
+        }
+        .result-preview .value {
+            color: var(--text-primary); font-weight: 500;
+            max-width: 60%; text-align: right; word-break: break-all;
+            font-family: var(--mono); font-size: 12px;
+        }
+        .result-preview .value.url-text { color: var(--blue-light); }
+
+        /* ============ Result Card ============ */
+        .result-card { display: none; }
+        .result-card.show { display: block; animation: fadeInUp 0.4s ease; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============ Actions Row ============ */
+        .actions-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+        .actions-row .btn { flex: 1; min-width: 130px; justify-content: center; }
+
+        /* ============ Content Sections ============ */
+        .content-section { display: none; margin-top: 14px; }
+        .content-section.show { display: block; animation: fadeInUp 0.4s ease; }
+        .content-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px 22px;
+            font-size: 14px; color: var(--text-secondary);
+            line-height: 1.85; white-space: pre-wrap;
+            max-height: 500px; overflow-y: auto;
+        }
+        .content-box::-webkit-scrollbar { width: 4px; }
+        .content-box::-webkit-scrollbar-track { background: transparent; }
+        .content-box::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+        .content-box strong { color: var(--gold-light); }
+        .section-header {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 600;
+            margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+        }
+        .section-header.gold { color: var(--gold-light); }
+        .section-header.blue { color: var(--blue-light); }
+        .section-header.green { color: var(--green); }
+        .section-header.purple { color: var(--purple); }
+        .section-header.orange { color: var(--orange); }
+        .section-header .tag {
+            font-size: 10px; padding: 2px 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.04); font-weight: 400; letter-spacing: 0;
+        }
+
+        /* ============ Progress Bar ============ */
+        .progress-bar { display: none; margin-top: 14px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-bar.show { display: block; }
+        .progress-bar .fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            border-radius: 2px; transition: width 0.3s;
+            box-shadow: 0 0 10px rgba(212,175,55,0.3);
+        }
+
+        /* ============ Usage Hint ============ */
+        .usage-hint {
+            margin-top: 10px; padding: 10px 14px;
+            background: rgba(212,175,55,0.03);
+            border: 1px solid rgba(212,175,55,0.08);
+            border-radius: var(--radius-sm);
+            font-size: 12px; color: var(--text-muted);
+        }
+        .usage-hint code {
+            color: var(--gold-light);
+            background: rgba(212,175,55,0.06);
+            padding: 2px 6px; border-radius: 4px;
+            font-size: 11px; font-family: var(--mono);
+        }
+
+        /* ============ Token Section ============ */
+        .token-section {
+            margin-top: 28px; padding: 18px;
+            background: var(--bg-glass);
+            border: 1px dashed var(--border-bright);
+            border-radius: var(--radius-sm);
+        }
+        .token-section summary { cursor: pointer; font-size: 12px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; }
+        .token-section summary:hover { color: var(--text-secondary); }
+        .token-section .token-form { margin-top: 14px; display: flex; gap: 8px; }
+        .token-section .token-form input {
+            flex: 1; padding: 9px 12px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text-primary);
+            font-size: 12px; font-family: var(--mono); outline: none;
+        }
+        .token-section .token-form input:focus { border-color: var(--gold); }
+
+        /* ============ Footer ============ */
+        .footer {
+            text-align: center; padding: 36px 0 16px;
+            color: var(--text-muted); font-size: 11px;
+            letter-spacing: 1px;
+        }
+        .footer .line {
+            width: 40px; height: 1px; margin: 0 auto 16px;
+            background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+        }
+
+        .char-count {
+            font-size: 11px; color: var(--text-muted);
+            text-align: right; margin-top: 6px;
+            font-family: var(--mono); letter-spacing: 0.5px;
+        }
+
+        /* ============ Responsive ============ */
+        @media (max-width: 640px) {
+            .container { padding: 24px 14px 40px; }
+            .card { padding: 18px; }
+            .header h1 { font-size: 24px; }
+            .input-group { flex-direction: column; }
+            .btn { justify-content: center; }
+            .actions-row .btn { font-size: 12px; padding: 10px 12px; min-width: 0; }
+            .format-selector { gap: 5px; }
+            .format-option { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-wrap">
+                <div class="logo">🎬</div>
+            </div>
+            <h1>抖音爆款视频创作工具</h1>
+            <p>下载 · 转文案 · AI深度分析 · 一键生成爆款</p>
+            <div class="badge">
+                <span class="dot"></span>
+                <span>V2.0 PROFESSIONAL</span>
+            </div>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card">
+            <div class="card-title">
+                <span class="icon gold">🔗</span>
+                <span class="label">视频链接</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="videoUrl"
+                    placeholder="粘贴抖音链接或完整分享文案"
+                    autocomplete="off" />
+                <button class="btn btn-primary" id="parseBtn" onclick="parseVideo()">🔍 解析</button>
+            </div>
+            <div class="usage-hint">
+                💡 支持：分享短链 <code>v.douyin.com/xxx</code> · 完整分享文案（复制粘贴即可） · <code>douyin.com/video/数字</code>
+            </div>
+            <div class="format-selector">
+                <div class="format-option active" data-format="mp4" onclick="selectFormat(this)">
+                    <div class="fmt-name">MP4</div>
+                    <div class="fmt-desc">高清视频</div>
+                </div>
+                <div class="format-option" data-format="webm" onclick="selectFormat(this)">
+                    <div class="fmt-name">WebM</div>
+                    <div class="fmt-desc">网页优化</div>
+                </div>
+                <div class="format-option" data-format="avi" onclick="selectFormat(this)">
+                    <div class="fmt-name">AVI</div>
+                    <div class="fmt-desc">原始画质</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-box" id="statusBox"><span id="statusText"></span></div>
+
+        <!-- Progress -->
+        <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+
+        <!-- Result Card -->
+        <div class="card result-card" id="resultCard">
+            <div class="card-title">
+                <span class="icon green">✅</span>
+                <span class="label">解析结果</span>
+            </div>
+            <div class="result-preview">
+                <div class="row">
+                    <span class="label">视频 ID</span>
+                    <span class="value" id="resultModalId">-</span>
+                </div>
+                <div class="row">
+                    <span class="label">下载链接</span>
+                    <span class="value url-text" id="resultVideoUrl">-</span>
+                </div>
+                <div class="row">
+                    <span class="label">选择格式</span>
+                    <span class="value" id="resultFormat">MP4</span>
+                </div>
+                <div class="row">
+                    <span class="label">文件大小</span>
+                    <span class="value" id="resultSize">待下载</span>
+                </div>
+            </div>
+
+            <!-- 操作按钮组 -->
+            <div class="actions-row">
+                <button class="btn btn-success" onclick="downloadVideo()">⬇️ 下载视频</button>
+                <button class="btn btn-purple" onclick="getTranscript()">🎤 获取口播文案</button>
+                <button class="btn btn-secondary" onclick="analyzeDeep()">📊 AI分析</button>
+            </div>
+
+            <!-- 口播文案区 -->
+            <div class="content-section" id="transcriptSection">
+                <div class="section-header purple">
+                    📝 口播文案
+                    <span class="tag">已清洗 · 去语气词</span>
+                </div>
+                <div class="content-box" id="transcriptContent"></div>
+                <div class="char-count" id="transcriptCharCount"></div>
+            </div>
+
+            <!-- AI深度分析区 -->
+            <div class="content-section" id="deepAnalysisSection">
+                <div class="section-header blue">
+                    📊 AI 深度分析
+                    <span class="tag">DeepSeek</span>
+                </div>
+                <div class="content-box" id="deepAnalysisContent"></div>
+                <!-- 一键生成爆款按钮 -->
+                <div class="actions-row" id="viralActions" style="display:none;margin-top:16px;">
+                    <button class="btn btn-orange" onclick="generateViral()" style="flex:1">🔥 一键生成爆款</button>
+                </div>
+            </div>
+
+            <!-- 爆款生成区 -->
+            <div class="content-section" id="viralSection">
+                <div class="section-header orange">
+                    🔥 爆款内容套餐
+                    <span class="tag">口播稿 · 标题 · 文案 · 钩子</span>
+                </div>
+                <div class="content-box" id="viralContent"></div>
+            </div>
+        </div>
+
+        <!-- Token Settings -->
+        <details class="token-section">
+            <summary>⚙️ ADVANCED · 配置 TikHub API Token</summary>
+            <div class="token-form">
+                <input type="text" id="tokenInput" placeholder="输入你的 TikHub API Token" />
+                <button class="btn btn-secondary btn-sm" onclick="saveToken()">保存</button>
+            </div>
+        </details>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="line"></div>
+            <p>POWERED BY TIKHUB API · DEEPSEEK AI · WHISPER STT</p>
+        </div>
+    </div>
+
+    <script>
+        let currentVideoUrl = '';
+        let currentModalId = '';
+        let currentFormat = 'mp4';
+        let currentTranscript = '';
+
+        function selectFormat(el) {
+            document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            currentFormat = el.dataset.format;
+            document.getElementById('resultFormat').textContent = currentFormat.toUpperCase();
+        }
+
+        async function parseVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            if (!url) { showStatus('请输入抖音视频链接', 'error'); return; }
+            const btn = document.getElementById('parseBtn');
+            btn.disabled = true; btn.textContent = '⏳ 解析中...';
+            showStatus('正在解析视频链接...', 'loading');
+            hideAllResults();
+            try {
+                const resp = await fetch('/api/parse', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, token: document.getElementById('tokenInput').value.trim() })
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    showStatus(data.error || '解析失败', 'error');
+                    btn.disabled = false; btn.textContent = '🔍 解析'; return;
+                }
+                showStatus('✅ 视频解析成功！', 'success');
+                currentVideoUrl = data.video_url; currentModalId = data.modal_id;
+                document.getElementById('resultModalId').textContent = data.modal_id;
+                document.getElementById('resultVideoUrl').textContent = data.video_url;
+                document.getElementById('resultFormat').textContent = currentFormat.toUpperCase();
+                document.getElementById('resultSize').textContent = '待下载';
+                document.getElementById('resultCard').classList.add('show');
+                hideStatus();
+            } catch (e) { showStatus('网络错误：' + e.message, 'error'); }
+            btn.disabled = false; btn.textContent = '🔍 解析';
+        }
+
+        async function downloadVideo() {
+            if (!currentVideoUrl) { showStatus('请先解析视频链接', 'error'); return; }
+            const btn = document.querySelector('.btn-success');
+            btn.disabled = true; btn.textContent = '⏳ 下载中...';
+            document.getElementById('progressBar').classList.add('show');
+            const fill = document.getElementById('progressFill'); fill.style.width = '0%';
+            let progress = 0;
+            const pi = setInterval(() => { if (progress < 80) { progress += Math.random() * 15; fill.style.width = Math.min(progress, 80) + '%'; } }, 500);
+            try {
+                const resp = await fetch('/api/download', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video_url: currentVideoUrl, modal_id: currentModalId, format: currentFormat })
+                });
+                const data = await resp.json();
+                clearInterval(pi); fill.style.width = '100%';
+                if (!data.success) {
+                    showStatus(data.error || '下载失败', 'error');
+                    btn.disabled = false; btn.textContent = '⬇️ 下载视频';
+                    setTimeout(() => fill.style.width = '0%', 1000); return;
+                }
+                const sizeMB = (data.size / 1024 / 1024).toFixed(2);
+                document.getElementById('resultSize').textContent = sizeMB + ' MB';
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = data.download_url; a.download = data.filename;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }, 500);
+                showStatus(`✅ 下载完成！${sizeMB} MB，已自动开始下载`, 'success');
+            } catch (e) { clearInterval(pi); showStatus('下载错误：' + e.message, 'error'); }
+            btn.disabled = false; btn.textContent = '⬇️ 下载视频';
+            setTimeout(() => { document.getElementById('progressBar').classList.remove('show'); fill.style.width = '0%'; }, 2000);
+        }
+
+        async function getTranscript() {
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            if (!urlInput) { showStatus('请先输入视频链接', 'error'); return; }
+            document.getElementById('transcriptSection').classList.add('show');
+            document.getElementById('transcriptContent').textContent = '⏳ 正在解析→下载→音频→识别→清洗...\n\n全过程约需1-3分钟，请耐心等待...';
+            showStatus('🎤 正在获取口播文案...', 'loading');
+            try {
+                const resp = await fetch('/api/transcribe', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    document.getElementById('transcriptContent').textContent = '❌ ' + (data.error || '获取失败');
+                    showStatus('❌ 口播文案获取失败', 'error'); return;
+                }
+                currentTranscript = data.cleaned_text || data.raw_text;
+                document.getElementById('transcriptContent').textContent = currentTranscript;
+                document.getElementById('transcriptCharCount').textContent = `共 ${data.char_count || currentTranscript.length} 字`;
+                showStatus('✅ 口播文案获取成功！', 'success');
+            } catch (e) {
+                document.getElementById('transcriptContent').textContent = '❌ 网络错误：' + e.message;
+                showStatus('❌ 获取失败：' + e.message, 'error');
+            }
+        }
+
+        async function analyzeDeep() {
+            let textToAnalyze = currentTranscript;
+            if (!textToAnalyze) {
+                showStatus('📌 请先点击「获取口播文案」获取文案内容', 'loading');
+                await getTranscript();
+                textToAnalyze = currentTranscript;
+                if (!textToAnalyze) return;
+            }
+            document.getElementById('deepAnalysisSection').classList.add('show');
+            document.getElementById('viralActions').style.display = 'none';
+            document.getElementById('deepAnalysisContent').textContent = '⏳ AI 正在进行深度分析...';
+            try {
+                const resp = await fetch('/api/analyze-deep', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: textToAnalyze })
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    document.getElementById('deepAnalysisContent').textContent = '❌ ' + (data.error || '分析失败');
+                    showStatus('❌ AI分析失败', 'error'); return;
+                }
+                document.getElementById('deepAnalysisContent').textContent = data.content;
+                document.getElementById('viralActions').style.display = 'flex';
+                showStatus('✅ AI深度分析完成！', 'success');
+            } catch (e) {
+                document.getElementById('deepAnalysisContent').textContent = '❌ 网络错误：' + e.message;
+                showStatus('❌ 分析失败：' + e.message, 'error');
+            }
+        }
+
+        async function generateViral() {
+            const textToUse = currentTranscript || '保险与财富管理';
+            document.getElementById('viralSection').classList.add('show');
+            document.getElementById('viralContent').textContent = '⏳ AI 正在生成爆款内容套餐（口播稿+标题+文案+钩子）...\n\n约需30-60秒...';
+            showStatus('🔥 正在生成爆款内容...', 'loading');
+            try {
+                const resp = await fetch('/api/generate-viral', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: textToUse, topic: '保险与财富管理' })
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    document.getElementById('viralContent').textContent = '❌ ' + (data.error || '生成失败');
+                    showStatus('❌ 生成失败', 'error'); return;
+                }
+                document.getElementById('viralContent').textContent = data.content;
+                showStatus('✅ 爆款内容套餐生成完毕！', 'success');
+            } catch (e) {
+                document.getElementById('viralContent').textContent = '❌ 网络错误：' + e.message;
+                showStatus('❌ 生成失败：' + e.message, 'error');
+            }
+        }
+
+        async function saveToken() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) { alert('请输入 Token'); return; }
+            try {
+                const resp = await fetch('/api/config/token', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                const data = await resp.json();
+                if (data.success) alert('✅ Token 已保存成功！');
+                else alert('❌ ' + (data.error || '保存失败'));
+            } catch (e) { alert('❌ 保存失败：' + e.message); }
+        }
+
+        function showStatus(msg, type) {
+            const box = document.getElementById('statusBox');
+            const text = document.getElementById('statusText');
+            box.className = 'status-box show ' + type;
+            if (type === 'loading') text.innerHTML = '<span class="spinner"></span>' + msg;
+            else text.textContent = msg;
+        }
+        function hideStatus() { document.getElementById('statusBox').className = 'status-box'; }
+        function hideAllResults() {
+            document.getElementById('transcriptSection').classList.remove('show');
+            document.getElementById('deepAnalysisSection').classList.remove('show');
+            document.getElementById('viralSection').classList.remove('show');
+            document.getElementById('viralActions').style.display = 'none';
+        }
+        document.getElementById('videoUrl').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') parseVideo();
+        });
+    </script>
+</body>
+</html>
