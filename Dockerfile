@@ -12,13 +12,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 预下载 Whisper tiny 模型
-RUN python -c "
-from faster_whisper import WhisperModel
-import os
-os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
-model = WhisperModel('tiny', device='cpu', compute_type='int8', download_root='/app/models')
-print('Whisper tiny model downloaded successfully')
-"
+ENV HF_HUB_DISABLE_SYMLINKS_WARNING=1
+RUN python -c "from faster_whisper import WhisperModel; model = WhisperModel('tiny', device='cpu', compute_type='int8', download_root='/app/models'); print('Whisper tiny model downloaded successfully')"
 
 # 复制应用代码
 COPY app.py .
